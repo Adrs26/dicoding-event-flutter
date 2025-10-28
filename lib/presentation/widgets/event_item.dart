@@ -6,12 +6,14 @@ class EventItem extends StatelessWidget {
   final String image;
   final String title;
   final String datetime;
+  final Function() onTap;
 
   const EventItem({
     super.key,
     required this.image,
     required this.title,
     required this.datetime,
+    required this.onTap,
   });
 
   @override
@@ -26,7 +28,7 @@ class EventItem extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {},
+        onTap: () => onTap(),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -34,24 +36,19 @@ class EventItem extends StatelessWidget {
               imageUrl: image,
               placeholder: (context, url) => const CircularProgressIndicator(),
               errorWidget: (context, url, error) => const Icon(Icons.error),
-              height: 230,
               fit: BoxFit.cover,
             ),
             Container(
               margin: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyLarge?.copyWith(fontSize: 14),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 3,
-                    ),
-                  ),
-                ],
+              child: Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontSize: 14),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 3,
+                ),
               ),
             ),
             Container(

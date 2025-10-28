@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:test_project/core/setup_locator.dart';
 import 'package:test_project/data/repositories/event_repository.dart';
 import 'package:test_project/logic/event_bloc.dart';
@@ -18,18 +19,6 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _pages = <Widget>[
-    UpcomingPage(),
-    FinishedPage(),
-    SettingsPage(text: 'Settings'),
-  ];
-
-  static const List<String> _pageTitles = <String>[
-    'Upcoming Events',
-    'Finished Events',
-    'Favorite Events',
-  ];
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -46,6 +35,22 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> pages = <Widget>[
+      UpcomingEventPage(
+        onEventTap: (eventId) => context.push('/detail/$eventId'),
+      ),
+      FinishedEventPage(
+        onEventTap: (eventId) => context.push('/detail/$eventId'),
+      ),
+      const SettingsPage(text: 'Settings'),
+    ];
+
+    List<String> pageTitles = <String>[
+      'Upcoming Events',
+      'Finished Events',
+      'Favorite Events',
+    ];
+
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -58,7 +63,7 @@ class _MainPageState extends State<MainPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            _pageTitles[_selectedIndex],
+            pageTitles[_selectedIndex],
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           surfaceTintColor: Theme.of(context).colorScheme.surface,
@@ -68,7 +73,7 @@ class _MainPageState extends State<MainPage> {
                 : Container(),
           ],
         ),
-        body: _pages[_selectedIndex],
+        body: pages[_selectedIndex],
         bottomNavigationBar: Container(
           height: 64,
           decoration: BoxDecoration(

@@ -5,8 +5,13 @@ import 'package:test_project/logic/event_intent.dart';
 import 'package:test_project/logic/event_state.dart';
 import 'package:test_project/presentation/widgets/event_item.dart';
 
-class FinishedPage extends StatelessWidget {
-  const FinishedPage({super.key});
+class FinishedEventPage extends StatelessWidget {
+  final Function(int) onEventTap;
+
+  const FinishedEventPage({
+    super.key,
+    required this.onEventTap
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,16 +22,17 @@ class FinishedPage extends StatelessWidget {
         if (state is EventLoading) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (state is EventSuccess) {
+        if (state is ListEventSuccess) {
           return ListView.builder(
             key: const PageStorageKey('finished_events_list'),
             itemCount: state.events.length,
             itemBuilder: (context, index) {
               final event = state.events[index];
               return EventItem(
-                image: event.mediaCover,
+                image: event.imageLogo,
                 title: event.name,
                 datetime: event.beginTime,
+                onTap: () => onEventTap(event.id),
               );
             },
           );

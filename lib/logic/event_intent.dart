@@ -7,3 +7,4 @@ abstract class EventIntent extends Equatable {
 
 class FetchUpcomingEvents extends EventIntent {}
 class FetchFinishedEvents extends EventIntent {}
+class FetchDetailEvent extends EventIntent {}

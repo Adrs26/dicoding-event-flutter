@@ -15,4 +15,9 @@ class ApiService {
         .map((e) => EventCoverModel.fromJson(e))
         .toList();
   }
+
+  Future<EventDetailModel> fetchEventDetail(int id) async {
+    final response = await _dio.get('/events/$id');
+    return EventDetailModel.fromJson(response.data['event']);
+  }
 }
