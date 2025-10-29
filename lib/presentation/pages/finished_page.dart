@@ -8,10 +8,7 @@ import 'package:test_project/presentation/widgets/event_item.dart';
 class FinishedEventPage extends StatelessWidget {
   final Function(int) onEventTap;
 
-  const FinishedEventPage({
-    super.key,
-    required this.onEventTap
-  });
+  const FinishedEventPage({super.key, required this.onEventTap});
 
   @override
   Widget build(BuildContext context) {

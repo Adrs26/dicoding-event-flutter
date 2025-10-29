@@ -6,6 +6,7 @@ import 'package:test_project/core/theme/color_scheme.dart';
 import 'package:test_project/core/theme/typography.dart';
 import 'package:test_project/presentation/pages/event_detail_page.dart';
 import 'package:test_project/presentation/pages/main_page.dart';
+import 'package:test_project/presentation/pages/search_event_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +46,12 @@ final GoRouter _router = GoRouter(
         final eventId = state.pathParameters['id'];
         return EventDetailPage(eventId: int.parse(eventId!));
       },
+    ),
+    GoRoute(
+      path: '/search',
+      builder: (context, state) => SearchEventPage(
+        onEventTap: (eventId) => context.push('/detail/$eventId'),
+      ),
     )
   ]
 );

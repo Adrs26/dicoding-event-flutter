@@ -6,5 +6,17 @@ abstract class EventIntent extends Equatable {
 }
 
 class FetchUpcomingEvents extends EventIntent {}
+
 class FetchFinishedEvents extends EventIntent {}
-class FetchDetailEvent extends EventIntent {}
+
+class FetchEventsByQuery extends EventIntent {
+  final String query;
+
+  FetchEventsByQuery(this.query);
+}
+
+class FetchDetailEvent extends EventIntent {
+  final int id;
+
+  FetchDetailEvent(this.id);
+}

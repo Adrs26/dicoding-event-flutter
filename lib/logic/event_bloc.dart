@@ -46,19 +46,38 @@ class FinishedEventsBloc extends Bloc<EventIntent, EventState> {
   }
 }
 
+class EventsByQueryBloc extends Bloc<EventIntent, EventState> {
+  final EventRepository repository;
+
+  EventsByQueryBloc(this.repository) : super(EventInitial()) {
+    on<FetchEventsByQuery>((event, emit) async {
+      emit(EventLoading());
+      try {
+        List<EventCoverModel> events = await repository.getEventsByQuery(
+          event.query,
+        );
+        emit(ListEventSuccess(events));
+      } catch (e) {
+        emit(EventError(e.toString()));
+      }
+    });
+  }
+}
+
 class DetailEventBloc extends Bloc<EventIntent, EventState> {
   final EventRepository repository;
-  final int eventId;
 
   bool _isLoaded = false;
 
-  DetailEventBloc(this.repository, this.eventId) : super(EventInitial()) {
+  DetailEventBloc(this.repository) : super(EventInitial()) {
     on<FetchDetailEvent>((event, emit) async {
       if (!_isLoaded) {
         emit(EventLoading());
         try {
-          EventDetailModel event = await repository.getEventDetail(eventId);
-          emit(SingleEventSuccess(event));
+          EventDetailModel eventDetail = await repository.getEventDetail(
+            event.id,
+          );
+          emit(SingleEventSuccess(eventDetail));
           _isLoaded = true;
         } catch (e) {
           emit(EventError(e.toString()));

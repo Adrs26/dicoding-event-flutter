@@ -57,7 +57,7 @@ class EventItem extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      Formatter.dateFormat(datetime),
+                      Formatter.dateToReadable(datetime),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(
                           context,

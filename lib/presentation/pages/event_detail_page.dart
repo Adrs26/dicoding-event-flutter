@@ -18,8 +18,8 @@ class EventDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) =>
-          DetailEventBloc(locator<EventRepository>(), eventId)
-            ..add(FetchDetailEvent()),
+          DetailEventBloc(locator<EventRepository>())
+            ..add(FetchDetailEvent(eventId)),
       child: BlocBuilder<DetailEventBloc, EventState>(
         builder: (context, state) {
           if (state is EventLoading) {
@@ -92,7 +92,7 @@ class EventDetailContent extends StatelessWidget {
           EventDetailData(title: 'Category:', value: eventDetail.category),
           EventDetailData(
             title: 'Datetime:',
-            value: Formatter.dateFormat(eventDetail.beginTime),
+            value: Formatter.dateToReadable(eventDetail.beginTime),
           ),
           EventDetailData(title: 'Location:', value: eventDetail.cityName),
           EventDetailData(
@@ -123,7 +123,7 @@ class EventDetailContent extends StatelessWidget {
             margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
             child: Expanded(
               child: Text(
-                Formatter.parseHtmlToText(eventDetail.description),
+                Formatter.htmlToText(eventDetail.description),
                 style: Theme.of(
                   context,
                 ).textTheme.bodySmall?.copyWith(fontSize: 12),

@@ -19,6 +19,22 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
 
+  List<Widget> get _pages => [
+    UpcomingEventPage(
+      onEventTap: (eventId) => context.push('/detail/$eventId'),
+    ),
+    FinishedEventPage(
+      onEventTap: (eventId) => context.push('/detail/$eventId'),
+    ),
+    const SettingsPage(text: 'Settings'),
+  ];
+
+  List<String> get _pageTitles => [
+    'Upcoming Events',
+    'Finished Events',
+    'Favorite Events',
+  ];
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -35,22 +51,6 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> pages = <Widget>[
-      UpcomingEventPage(
-        onEventTap: (eventId) => context.push('/detail/$eventId'),
-      ),
-      FinishedEventPage(
-        onEventTap: (eventId) => context.push('/detail/$eventId'),
-      ),
-      const SettingsPage(text: 'Settings'),
-    ];
-
-    List<String> pageTitles = <String>[
-      'Upcoming Events',
-      'Finished Events',
-      'Favorite Events',
-    ];
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -63,58 +63,79 @@ class _MainPageState extends State<MainPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            pageTitles[_selectedIndex],
+            _pageTitles[_selectedIndex],
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           surfaceTintColor: Theme.of(context).colorScheme.surface,
           actions: [
             _selectedIndex == 0 || _selectedIndex == 1
-                ? IconButton(onPressed: () {}, icon: const Icon(Icons.search))
+                ? IconButton(
+                    onPressed: () => context.push('/search'),
+                    icon: const Icon(Icons.search),
+                  )
                 : Container(),
           ],
         ),
-        body: pages[_selectedIndex],
-        bottomNavigationBar: Container(
-          height: 64,
-          decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(color: Colors.grey.shade300, width: 1),
-            ),
-          ),
-          child: BottomNavigationBar(
-            elevation: 0,
-            currentIndex: _selectedIndex,
-            onTap: (index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
-            items: [
-              BottomNavigationBarItem(
-                icon: Icon(
-                  _selectedIndex == 0
-                      ? Icons.event_note
-                      : Icons.event_note_outlined,
-                ),
-                label: 'Upcoming',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(
-                  _selectedIndex == 1
-                      ? Icons.event_available
-                      : Icons.event_available_outlined,
-                ),
-                label: 'Finished',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(
-                  _selectedIndex == 2 ? Icons.favorite : Icons.favorite_outline,
-                ),
-                label: 'Favorite',
-              ),
-            ],
-          ),
+        body: _pages[_selectedIndex],
+        bottomNavigationBar: _MainPageNavigationBar(
+          selectedIndex: _selectedIndex,
+          onDestinationSelected: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
         ),
+      ),
+    );
+  }
+}
+
+class _MainPageNavigationBar extends StatelessWidget {
+  final int selectedIndex;
+  final Function(int) onDestinationSelected;
+
+  const _MainPageNavigationBar({
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: Colors.grey.shade300, width: 1)),
+      ),
+      child: NavigationBar(
+        elevation: 0,
+        indicatorColor: Colors.blue.shade100,
+        selectedIndex: selectedIndex,
+        onDestinationSelected: onDestinationSelected,
+        destinations: [
+          NavigationDestination(
+            icon: const Icon(Icons.event_note_outlined),
+            selectedIcon: Icon(
+              Icons.event_note,
+              color: Theme.of(context).primaryColor,
+            ),
+            label: 'Upcoming',
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.event_available_outlined),
+            selectedIcon: Icon(
+              Icons.event_available,
+              color: Theme.of(context).primaryColor,
+            ),
+            label: 'Finished',
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.favorite_outline),
+            selectedIcon: Icon(
+              Icons.favorite,
+              color: Theme.of(context).primaryColor,
+            ),
+            label: 'Favorite',
+          ),
+        ],
       ),
     );
   }

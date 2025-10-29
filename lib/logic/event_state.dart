@@ -7,23 +7,30 @@ abstract class EventState extends Equatable {
 }
 
 class EventInitial extends EventState {}
+
 class EventLoading extends EventState {}
+
 class ListEventSuccess extends EventState {
   final List<EventCoverModel> events;
+
   ListEventSuccess(this.events);
 
   @override
   List<Object?> get props => [events];
 }
+
 class SingleEventSuccess extends EventState {
   final EventDetailModel event;
+
   SingleEventSuccess(this.event);
 
   @override
   List<Object?> get props => [event];
 }
+
 class EventError extends EventState {
   final String message;
+
   EventError(this.message);
 
   @override

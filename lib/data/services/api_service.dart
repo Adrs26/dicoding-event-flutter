@@ -16,6 +16,19 @@ class ApiService {
         .toList();
   }
 
+  Future<List<EventCoverModel>> fetchEventsByQuery(String query) async {
+    final response = await _dio.get(
+      '/events',
+      queryParameters: {
+        'active': -1,
+        'q': query
+      },
+    );
+    return (response.data['listEvents'] as List)
+        .map((e) => EventCoverModel.fromJson(e))
+        .toList();
+  }
+
   Future<EventDetailModel> fetchEventDetail(int id) async {
     final response = await _dio.get('/events/$id');
     return EventDetailModel.fromJson(response.data['event']);

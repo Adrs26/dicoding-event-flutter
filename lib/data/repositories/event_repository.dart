@@ -10,6 +10,10 @@ class EventRepository {
     return await apiService.fetchEvents(active);
   }
 
+  Future<List<EventCoverModel>> getEventsByQuery(String query) async {
+    return await apiService.fetchEventsByQuery(query);
+  }
+
   Future<EventDetailModel> getEventDetail(int id) async {
     return await apiService.fetchEventDetail(id);
   }
