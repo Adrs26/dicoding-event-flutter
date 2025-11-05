@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:test_project/core/setup_locator.dart';
-import 'package:test_project/core/theme/color_scheme.dart';
-import 'package:test_project/core/theme/typography.dart';
+import 'package:test_project/data/local/event_entity.dart';
+import 'package:test_project/di/setup_locator.dart';
+import 'package:test_project/presentation/bloc/event_bloc.dart';
+import 'package:test_project/presentation/theme/color_scheme.dart';
+import 'package:test_project/presentation/theme/typography.dart';
 import 'package:test_project/presentation/pages/event_detail_page.dart';
 import 'package:test_project/presentation/pages/main_page.dart';
 import 'package:test_project/presentation/pages/search_event_page.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID');
-  setupLocator();
+  await Hive.initFlutter();
+  Hive.registerAdapter(EventEntityAdapter());
+  await setupLocator();
   runApp(const MyApp());
 }
 
@@ -20,26 +26,26 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'My Flutter App',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: myColorScheme,
-        fontFamily: 'Inter',
-        textTheme: myTextTheme,
-        useMaterial3: true,
+    return BlocProvider(
+      create: (_) => locator<FavoriteEventsBloc>(),
+      child: MaterialApp.router(
+        title: 'My Flutter App',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: myColorScheme,
+          fontFamily: 'Inter',
+          textTheme: myTextTheme,
+          useMaterial3: true,
+        ),
+        routerConfig: _router,
       ),
-      routerConfig: _router,
     );
   }
 }
 
 final GoRouter _router = GoRouter(
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const MainPage(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const MainPage()),
     GoRoute(
       path: '/detail/:id',
       builder: (context, state) {
@@ -52,6 +58,6 @@ final GoRouter _router = GoRouter(
       builder: (context, state) => SearchEventPage(
         onEventTap: (eventId) => context.push('/detail/$eventId'),
       ),
-    )
-  ]
+    ),
+  ],
 );

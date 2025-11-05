@@ -22,6 +22,7 @@ class EventCoverModel {
 
 class EventDetailModel {
   final int id;
+  final String imageLogo;
   final String mediaCover;
   final String name;
   final String ownerName;
@@ -35,6 +36,7 @@ class EventDetailModel {
 
   EventDetailModel({
     required this.id,
+    required this.imageLogo,
     required this.mediaCover,
     required this.name,
     required this.ownerName,
@@ -50,6 +52,7 @@ class EventDetailModel {
   factory EventDetailModel.fromJson(Map<String, dynamic> json) =>
       EventDetailModel(
         id: json['id'],
+        imageLogo: json['imageLogo'],
         mediaCover: json['mediaCover'],
         name: json['name'],
         ownerName: json['ownerName'],

@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:test_project/core/setup_locator.dart';
-import 'package:test_project/data/repositories/event_repository.dart';
-import 'package:test_project/logic/event_bloc.dart';
-import 'package:test_project/logic/event_intent.dart';
-import 'package:test_project/logic/event_state.dart';
+import 'package:test_project/data/models/event_model.dart';
+import 'package:test_project/di/setup_locator.dart';
+import 'package:test_project/presentation/bloc/event_bloc.dart';
+import 'package:test_project/presentation/bloc/event_intent.dart';
+import 'package:test_project/presentation/bloc/event_state.dart';
 import 'package:test_project/presentation/widgets/event_item.dart';
 
 class SearchEventPage extends StatelessWidget {
@@ -17,9 +17,7 @@ class SearchEventPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          EventsByQueryBloc(locator<EventRepository>())
-            ..add(FetchEventsByQuery('')),
+      create: (_) => locator<EventsByQueryBloc>()..add(FetchEventsByQuery('')),
       child: Scaffold(
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(100),
@@ -27,25 +25,25 @@ class SearchEventPage extends StatelessWidget {
         ),
         body: BlocBuilder<EventsByQueryBloc, EventState>(
           builder: (context, state) {
-            if (state is EventLoading) {
+            if (state is LoadingState) {
               return const Center(child: CircularProgressIndicator());
             }
-            if (state is ListEventSuccess) {
+            if (state is SuccessState<EventCoverModel>) {
               return ListView.builder(
-                key: const PageStorageKey('finished_events_list'),
-                itemCount: state.events.length,
+                key: const PageStorageKey('search_events_list'),
+                itemCount: state.items?.length,
                 itemBuilder: (context, index) {
-                  final event = state.events[index];
+                  final event = state.items?[index];
                   return EventItem(
-                    image: event.imageLogo,
-                    title: event.name,
-                    datetime: event.beginTime,
-                    onTap: () => onEventTap(event.id),
+                    image: event?.imageLogo ?? '',
+                    title: event?.name ?? '',
+                    datetime: event?.beginTime ?? '',
+                    onTap: () => onEventTap(event?.id ?? 0),
                   );
                 },
               );
             }
-            if (state is EventError) {
+            if (state is ErrorState) {
               return Center(child: Text(state.message));
             }
             return const Center(child: Text('Press refresh to load users'));

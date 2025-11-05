@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:test_project/data/local/event_entity.dart';
 
 abstract class EventIntent extends Equatable {
   @override
@@ -19,4 +20,12 @@ class FetchDetailEvent extends EventIntent {
   final int id;
 
   FetchDetailEvent(this.id);
+}
+
+class GetAllFavoriteEvents extends EventIntent {}
+
+class HandleFavoriteEvent extends EventIntent {
+  final EventEntity event;
+
+  HandleFavoriteEvent(this.event);
 }

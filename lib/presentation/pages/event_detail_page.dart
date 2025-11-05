@@ -1,31 +1,45 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:test_project/core/setup_locator.dart';
-import 'package:test_project/data/models/event_model.dart';
-import 'package:test_project/data/repositories/event_repository.dart';
-import 'package:test_project/logic/event_bloc.dart';
-import 'package:test_project/logic/event_intent.dart';
-import 'package:test_project/logic/event_state.dart';
+import 'package:test_project/data/local/event_entity.dart';
+import 'package:test_project/di/setup_locator.dart';
+import 'package:test_project/presentation/bloc/event_bloc.dart';
+import 'package:test_project/presentation/bloc/event_intent.dart';
+import 'package:test_project/presentation/bloc/event_state.dart';
 import 'package:test_project/utils/formatter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class EventDetailPage extends StatelessWidget {
+class EventDetailPage extends StatefulWidget {
   final int eventId;
 
   const EventDetailPage({super.key, required this.eventId});
 
   @override
+  State<EventDetailPage> createState() => _EventDetailPageState();
+}
+
+class _EventDetailPageState extends State<EventDetailPage> {
+  late int eventId;
+  bool? isFavorite;
+
+  @override
+  void initState() {
+    super.initState();
+    eventId = widget.eventId;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          DetailEventBloc(locator<EventRepository>())
-            ..add(FetchDetailEvent(eventId)),
+      create: (_) => locator<DetailEventBloc>()..add(FetchDetailEvent(eventId)),
       child: BlocBuilder<DetailEventBloc, EventState>(
         builder: (context, state) {
-          if (state is EventLoading) {
+          if (state is LoadingState) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (state is SingleEventSuccess) {
+          if (state is SuccessState<EventDetailBlocModel>) {
+            isFavorite ??= state.item!.isFavorite;
+
             return Scaffold(
               appBar: AppBar(
                 title: Text(
@@ -38,11 +52,32 @@ class EventDetailPage extends StatelessWidget {
                   child: Container(color: Colors.grey.shade300, height: 1),
                 ),
               ),
-              body: EventDetailContent(eventDetail: state.event),
-              bottomNavigationBar: const EventDetailBottomBar(),
+              body: _EventDetailContent(eventDetail: state.item!),
+              bottomNavigationBar: _EventDetailBottomBar(
+                link: state.item!.link,
+                isFavorite: isFavorite!,
+                onFavoriteClick: () {
+                  setState(() {
+                    isFavorite = !isFavorite!;
+                    context.read<DetailEventBloc>().add(
+                      HandleFavoriteEvent(
+                        EventEntity(
+                          id: state.item!.id,
+                          name: state.item!.name,
+                          image: state.item!.imageLogo,
+                          beginTime: state.item!.beginTime,
+                        ),
+                      ),
+                    );
+                    context.read<FavoriteEventsBloc>().add(
+                      GetAllFavoriteEvents(),
+                    );
+                  });
+                },
+              ),
             );
           }
-          if (state is EventError) {
+          if (state is ErrorState) {
             return Center(child: Text(state.message));
           }
           return const Center(child: Text('Press refresh to load users'));
@@ -52,10 +87,10 @@ class EventDetailPage extends StatelessWidget {
   }
 }
 
-class EventDetailContent extends StatelessWidget {
-  final EventDetailModel eventDetail;
+class _EventDetailContent extends StatelessWidget {
+  final EventDetailBlocModel eventDetail;
 
-  const EventDetailContent({super.key, required this.eventDetail});
+  const _EventDetailContent({required this.eventDetail});
 
   @override
   Widget build(BuildContext context) {
@@ -88,16 +123,13 @@ class EventDetailContent extends StatelessWidget {
             indent: 16,
             endIndent: 16,
           ),
-          EventDetailData(title: 'Owner Name:', value: eventDetail.ownerName),
-          EventDetailData(title: 'Category:', value: eventDetail.category),
-          EventDetailData(
-            title: 'Datetime:',
-            value: Formatter.dateToReadable(eventDetail.beginTime),
-          ),
-          EventDetailData(title: 'Location:', value: eventDetail.cityName),
-          EventDetailData(
+          _EventDetailData(title: 'Owner Name:', value: eventDetail.ownerName),
+          _EventDetailData(title: 'Category:', value: eventDetail.category),
+          _EventDetailData(title: 'Datetime:', value: eventDetail.formattedDate),
+          _EventDetailData(title: 'Location:', value: eventDetail.cityName),
+          _EventDetailData(
             title: 'Quota remaining:',
-            value: (eventDetail.quota - eventDetail.registrants).toString(),
+            value: eventDetail.remainingQuota,
           ),
           const SizedBox(height: 8),
           Divider(
@@ -136,11 +168,11 @@ class EventDetailContent extends StatelessWidget {
   }
 }
 
-class EventDetailData extends StatelessWidget {
+class _EventDetailData extends StatelessWidget {
   final String title;
   final String value;
 
-  const EventDetailData({super.key, required this.title, required this.value});
+  const _EventDetailData({required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -170,8 +202,23 @@ class EventDetailData extends StatelessWidget {
   }
 }
 
-class EventDetailBottomBar extends StatelessWidget {
-  const EventDetailBottomBar({super.key});
+class _EventDetailBottomBar extends StatelessWidget {
+  final String link;
+  final bool isFavorite;
+  final Function onFavoriteClick;
+
+  const _EventDetailBottomBar({
+    required this.link,
+    required this.isFavorite,
+    required this.onFavoriteClick,
+  });
+
+  Future<void> _openWebsite(String link) async {
+    final Uri url = Uri.parse(link);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw Exception('Could not launch $url');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -185,7 +232,9 @@ class EventDetailBottomBar extends StatelessWidget {
           children: [
             Expanded(
               child: FilledButton(
-                onPressed: () {},
+                onPressed: () async {
+                  _openWebsite(link);
+                },
                 child: Text(
                   'Go to website',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -196,9 +245,11 @@ class EventDetailBottomBar extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                onFavoriteClick();
+              },
               icon: Icon(
-                Icons.favorite_outline,
+                isFavorite ? Icons.favorite : Icons.favorite_border,
                 size: 32,
                 color: Theme.of(context).colorScheme.primary,
               ),

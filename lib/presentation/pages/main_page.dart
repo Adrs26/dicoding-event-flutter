@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:test_project/core/setup_locator.dart';
-import 'package:test_project/data/repositories/event_repository.dart';
-import 'package:test_project/logic/event_bloc.dart';
+import 'package:test_project/di/setup_locator.dart';
+import 'package:test_project/presentation/bloc/event_bloc.dart';
 import 'package:test_project/presentation/pages/upcoming_page.dart';
 import 'package:test_project/presentation/pages/finished_page.dart';
-import 'package:test_project/presentation/pages/settings_page.dart';
+import 'package:test_project/presentation/pages/favorite_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -26,7 +25,9 @@ class _MainPageState extends State<MainPage> {
     FinishedEventPage(
       onEventTap: (eventId) => context.push('/detail/$eventId'),
     ),
-    const SettingsPage(text: 'Settings'),
+    FavoriteEventPage(
+      onEventTap: (eventId) => context.push('/detail/$eventId'),
+    ),
   ];
 
   List<String> get _pageTitles => [
@@ -53,12 +54,8 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (context) => UpcomingEventsBloc(locator<EventRepository>()),
-        ),
-        BlocProvider(
-          create: (context) => FinishedEventsBloc(locator<EventRepository>()),
-        ),
+        BlocProvider(create: (_) => locator<UpcomingEventsBloc>()),
+        BlocProvider(create: (_) => locator<FinishedEventsBloc>()),
       ],
       child: Scaffold(
         appBar: AppBar(
